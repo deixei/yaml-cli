@@ -6,6 +6,7 @@ root:
       level3:
         name: input_level_3
         code: i3
+        date: '2024-11-10T13:34:34.773087900+00:00'
       name: input_level_2
   array:
   - name: input1
@@ -15,5 +16,5 @@ root:
 original_name: input1
 map1: !Thing
   k: v
-other: 'marcio'
+other_name_len: '6'
 other1: 'MARCIO'

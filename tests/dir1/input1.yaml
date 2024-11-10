@@ -6,7 +6,7 @@ root:
       level3:
         name: "input1"
         code: "i3"
-
+        date: "{{ get_date() }}"
   array: 
     - name: "input1"
     - name: "input2"
@@ -14,6 +14,6 @@ root:
 
 original_name: *tagname
 map1: !Thing {k: v}
-other: "{{ root.level1.name}}"
+other_name_len: "{{ root.level1.name | len}}"
 
 other1: "{{ root.level1.name | upper }}"

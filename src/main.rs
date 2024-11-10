@@ -1,6 +1,7 @@
 use clap::{Command, Arg};
 use serde_yaml::Value;
 use std::fs;
+use chrono::Utc;
 use std::path::Path;
 
 fn main() {
@@ -88,6 +89,18 @@ fn main() {
                 filter = parts[1].trim();
                 //print!("{} | {}", key, filter);
             }
+
+            if key.contains("()") {
+                let parts: Vec<&str> = key.split("()").collect();
+                key = parts[0].trim();
+
+                // if the key is a function, call it
+                if key == "get_date" {
+                    return chrono::Utc::now().to_rfc3339();
+                }
+
+                return "".to_string();
+            }
             // trim the key
             key = key.trim();
             filter = filter.trim();
@@ -107,6 +120,12 @@ fn main() {
                     // if filter == "upper", convert the value to uppercase
                     if filter == "upper" {
                         return final_value.to_uppercase();
+                    }
+                    if filter == "lower" {
+                        return final_value.to_lowercase();
+                    }
+                    if filter == "len" {
+                        return final_value.len().to_string();
                     }
                 }
                 return final_value.to_string();
