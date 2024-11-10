@@ -2,6 +2,7 @@ use clap::{Command, Arg};
 use serde_yaml::Value;
 use std::fs;
 use std::path::Path;
+use std::collections::BTreeMap;
 
 fn main() {
     let matches = Command::new("yw")
@@ -71,8 +72,18 @@ fn main() {
 
 fn merge_yaml_file(path: &Path, merged_yaml: &mut Value) {
     let file_content = fs::read_to_string(path).unwrap();
-    let yaml: Value = serde_yaml::from_str(&file_content).unwrap();
-    merge_yaml(merged_yaml, &yaml);
+    // if file_content contains multiple documents (---), we need to split them and merge them separately
+    if file_content.contains("---") {
+        let documents: Vec<&str> = file_content.split("---").collect();
+        for document in documents {
+            let yaml: Value = serde_yaml::from_str(document).unwrap();
+            merge_yaml(merged_yaml, &yaml);
+        }
+        return;
+    } else {
+        let yaml: Value = serde_yaml::from_str(&file_content).unwrap();
+        merge_yaml(merged_yaml, &yaml);    
+    }
 }
 
 fn merge_yaml(base: &mut Value, other: &Value) {
@@ -80,6 +91,15 @@ fn merge_yaml(base: &mut Value, other: &Value) {
         (Value::Mapping(base_map), Value::Mapping(other_map)) => {
             for (key, value) in other_map {
                 merge_yaml(base_map.entry(key.clone()).or_insert(Value::Null), value);
+            }
+        }
+        (Value::Sequence(base_seq), Value::Sequence(other_seq)) => {
+            for value in other_seq {
+                // if the value already exists in the base sequence, skip it
+                if base_seq.contains(value) {
+                    continue;
+                }
+                base_seq.push(value.clone());
             }
         }
         (base, other) => {

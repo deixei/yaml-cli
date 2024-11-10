@@ -1,9 +1,16 @@
 root:
   level1: 
-    name: &name "input1"
+    name: &tagname "input1"
+    level2:
+      id: 1
+      level3:
+        name: "input1"
+        code: "i3"
+
   array: 
     - name: "input1"
     - name: "input2"
     - name: "input3"
 
-original_name: *name
+original_name: *tagname
+map1: !Thing {k: v}

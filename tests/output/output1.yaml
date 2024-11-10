@@ -2,9 +2,16 @@ root:
   level1:
     name: input2
     level2:
-      name: input_level_2
+      id: 1
       level3:
         name: input_level_3
+        code: i3
+      name: input_level_2
   array:
+  - name: input1
+  - name: input2
+  - name: input3
   - name: add1
 original_name: input1
+map1: !Thing
+  k: v
