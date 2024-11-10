@@ -14,3 +14,6 @@ root:
 
 original_name: *tagname
 map1: !Thing {k: v}
+other: "{{ root.level1.name}}"
+
+other1: "{{ root.level1.name | upper }}"

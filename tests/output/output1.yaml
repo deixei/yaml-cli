@@ -1,6 +1,6 @@
 root:
   level1:
-    name: input2
+    name: marcio
     level2:
       id: 1
       level3:
@@ -15,3 +15,5 @@ root:
 original_name: input1
 map1: !Thing
   k: v
+other: 'marcio'
+other1: 'MARCIO'

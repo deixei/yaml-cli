@@ -2,7 +2,6 @@ use clap::{Command, Arg};
 use serde_yaml::Value;
 use std::fs;
 use std::path::Path;
-use std::collections::BTreeMap;
 
 fn main() {
     let matches = Command::new("yw")
@@ -64,9 +63,82 @@ fn main() {
                 merge_yaml_file(path, &mut merged_yaml);
             }
         }
+        
+        // Change the value of root.level1.name to "marcio"
+        set_nested_value(&mut merged_yaml, "root.level1.name", Value::String("marcio".to_string()));
+
+        // Access a nested value using a path
+        if let Some(nested_value) = get_nested_value(&merged_yaml, "root.level1.name") {
+            println!("Nested value: {:?}", nested_value);
+        } else {
+            println!("Nested value not found");
+        }        
 
         let output_yaml = serde_yaml::to_string(&merged_yaml).unwrap();
+
+        // find string inside {{ }} and replace it with the value of the nested key
+        let re = regex::Regex::new(r"\{\{([^{}]*)\}\}").unwrap();
+        let output_yaml = re.replace_all(&output_yaml, |caps: &regex::Captures| {
+            let mut filter = "default";
+            let mut key = caps.get(1).unwrap().as_str();
+            // if the key contains a pipe, it means it has a filter
+            if key.contains("|") {
+                let parts: Vec<&str> = key.split("|").collect();
+                key = parts[0].trim();
+                filter = parts[1].trim();
+                //print!("{} | {}", key, filter);
+            }
+            // trim the key
+            key = key.trim();
+            filter = filter.trim();
+
+            println!("key:{}", key);
+            println!("filter:{}", filter);
+            let value = get_nested_value(&merged_yaml, key).unwrap();
+            if value == &Value::Null {
+                return "".to_string();
+            } else {
+                let final_value = value.as_str().unwrap();
+                if filter == "default" {
+                    return final_value.to_string();
+                }
+                else {
+                    // apply the filter
+                    // if filter == "upper", convert the value to uppercase
+                    if filter == "upper" {
+                        return final_value.to_uppercase();
+                    }
+                }
+                return final_value.to_string();
+            }
+        });
+        // Convert the result to a String
+        let output_yaml = output_yaml.to_string();
         fs::write(output_path, output_yaml).unwrap();
+    }
+}
+
+fn get_nested_value<'a>(value: &'a Value, path: &str) -> Option<&'a Value> {
+    let mut current_value = value;
+    for key in path.split('.') {
+        current_value = current_value.get(key)?;
+    }
+    Some(current_value)
+}
+
+fn set_nested_value(value: &mut Value, path: &str, new_value: Value) {
+    let mut current_value = value;
+    let keys: Vec<&str> = path.split('.').collect();
+    for (i, key) in keys.iter().enumerate() {
+        if i == keys.len() - 1 {
+            if let Value::Mapping(map) = current_value {
+                map.insert(Value::String(key.to_string()), new_value.clone());
+            }
+        } else {
+            current_value = current_value
+                .get_mut(*key)
+                .unwrap_or_else(|| panic!("Key not found: {}", key));
+        }
     }
 }
 
