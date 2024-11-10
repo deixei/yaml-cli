@@ -1,0 +1,14 @@
+[package]
+name = "yw"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "yaml wrangler and handler"
+repository = "https://github.com/deixei/yaml-cli"
+homepage = "http://www.deixei.com/yw"
+
+
+[dependencies]
+clap = "4.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"

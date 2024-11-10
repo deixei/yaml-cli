@@ -1,0 +1,9 @@
+root:
+  level1: 
+    name: &name "input1"
+  array: 
+    - name: "input1"
+    - name: "input2"
+    - name: "input3"
+
+original_name: *name

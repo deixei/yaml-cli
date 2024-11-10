@@ -1,5 +1,16 @@
 # yaml-cli
+
 Adventure in managing yaml files into a merged data, focus in keeping yaml1.2 still working
+
+## Base idea
+
+rust based program 
+command line that takes a collection of yaml files, that use yaml1.2, in a sequence
+Merge their content, matching the values, and making the last file overrider previous value 
+
+yw merge --input tests/dir1/input1.yaml --input /tests/dir1/input2.yaml --output /tests/output/output1.yaml
+yw merge --input tests/dir1/ --output output.yaml
+
 
 
 ## Author
