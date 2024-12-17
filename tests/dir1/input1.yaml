@@ -2,6 +2,7 @@ root:
   level1: 
     name: &tagname "input1"
     v: "USERDOMAIN"
+    l: "userdomain"
     level2:
       id: 1
       level3:
@@ -21,4 +22,4 @@ original_name: *tagname
 map1: !Thing {k: v}
 other_name_len: "{{ root.level1.name | len }}"
 
-other_upper_1: "{{ root.level1.name | upper }}"
+other_upper_1: "{{ root.level1.l | upper | get_env }}"

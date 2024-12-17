@@ -1,6 +1,6 @@
 use clap::{Command, Arg};
 use serde_yaml::Value;
-use std::{fs, ops::Index};
+use std::{f32::consts::E, fs, ops::Index};
 use chrono::prelude::*;
 use std::path::Path;
 
@@ -86,37 +86,20 @@ fn main() {
         // find string inside {{ }} and replace it with the value of the nested key
         let re = regex::Regex::new(r"\{\{([^{}]*)\}\}").unwrap();
         let output_yaml = re.replace_all(&output_yaml, |caps: &regex::Captures| {
-            let mut filter = "default";
-            let mut key = caps.get(1).unwrap().as_str();
+            //let mut filter = "default";
+            let key = caps.get(1).unwrap().as_str();
             
             // if the key contains a pipe, it means it has a filter
             if key.contains("|") {
-                // this only handles filters with a single prefix element
-                let parts: Vec<&str> = key.split("|").collect();
-                key = parts[0].trim();
-                filter = parts[1].trim();
-                //DEBUG: print!("FILTER: {} | {}", key, filter);
+                return handle_pipe(key, &merged_yaml);
             }
-
-
 
             // in case the key contains a function with paramenters (e.g. get_env('ALLUSERSPROFILE') or get_data('2021-01-01', '2021-01-31'))
             if key.contains("(") && key.contains(")") {
                 return apply_function(key, &merged_yaml);
             }
 
-            // trim the key
-            key = key.trim();
-            filter = filter.trim();
-
-            //DEBUG: println!("key:{}", key);
-            //DEBUG: println!("filter:{}", filter);
-            let value = get_nested_value(&merged_yaml, key).unwrap();
-            if value == &Value::Null {
-                return "".to_string();
-            } else {
-                return apply_filters(value.as_str().unwrap(), filter);
-            }
+            return "".to_string();
         });
         // Convert the result to a String
         let output_yaml = output_yaml.to_string();
@@ -245,7 +228,7 @@ fn apply_filters(value: &str, filter: &str) -> String {
 
 }
 
-fn apply_function(function_statement: &str, merged_yaml: &Value,) -> String {
+fn apply_function(function_statement: &str, merged_yaml: &Value) -> String {
     // a function_statement is a string that contains a function with parameters
     // it can be a function with paramenters (e.g. get_env('ALLUSERSPROFILE') or get_data('2021-01-01', '2021-01-31'))
     // or a function without parameters (e.g. get_date())
@@ -293,6 +276,23 @@ fn apply_function(function_statement: &str, merged_yaml: &Value,) -> String {
 
 
             // functions with parameters
+
+            if function_name == "upper" {
+                let func_param_1 = modified_params.index(0);
+                return func_param_1.to_uppercase();
+            }
+        
+            if function_name == "lower" {
+                let func_param_1 = modified_params.index(0);
+                return func_param_1.to_lowercase();
+            }
+        
+            if function_name == "len" {
+                let func_param_1 = modified_params.index(0);
+                return func_param_1.len().to_string();
+            }
+
+
             if function_name == "get_env" {
                 // get the environment variable, if it does not exist, return an empty string
                 // log an error if the environment variable does not exist
@@ -326,4 +326,45 @@ fn apply_function(function_statement: &str, merged_yaml: &Value,) -> String {
     }
 
     return "".to_string();
+}
+
+
+fn handle_pipe(pipe_statement: &str, merged_yaml: &Value) -> String {
+    // a pipe is used to pass the value of the first part into the secund part as a parameter
+    // e.g. get_env('ALLUSERSPROFILE') | upper | lower
+    // the value of get_env('ALLUSERSPROFILE') is passed to upper, and the result of upper is passed to lower
+    // A | B | C is the same as C(B(A))
+    
+    if pipe_statement.contains("|") {
+        // this only handles filters with a single prefix element
+        let mut parts: Vec<&str> = pipe_statement.split("|").collect();
+        let mut value = parts[0].trim();
+        if value.starts_with("'") && value.ends_with("'") {
+            value = value.trim_matches('\'');
+        }
+        else {
+            value = get_nested_value(&merged_yaml, value).unwrap().as_str().unwrap();
+        }
+        let action = parts[1].trim();
+        parts.remove(0);
+        parts.remove(0);
+        
+        let next_pipe =  parts.join(" | ");
+
+        let function_statement = format!("{}('{}')", action, value);
+        println!("VALUE: {} | ACTION: {}", value, action);
+        let result = apply_function(function_statement.as_str(), merged_yaml);
+
+        if next_pipe.contains("|") {
+            let new_pipe_statement = format!("{} | {}", result, next_pipe);
+            return handle_pipe(new_pipe_statement.as_str(), merged_yaml)
+        }
+        else {
+            return result;
+        }
+        //let new_pipe_statement = format!("{} | {}", result, next_pipe);
+        //return handle_pipe(new_pipe_statement.as_str(), merged_yaml)
+    }
+
+    return pipe_statement.to_string();
 }

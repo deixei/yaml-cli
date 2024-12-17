@@ -2,12 +2,13 @@ root:
   level1:
     name: marcio
     v: USERDOMAIN
+    l: userdomain
     level2:
       id: 1
       level3:
         name: input_level_3
         code: i3
-        date: '2024-12-17T08:02:54.341453+00:00'
+        date: '2024-12-17T18:49:54.313951500+00:00'
         ndt: ''
         USERDOMAIN: 'DX2023'
         fake_USERDOMAIN: ''
@@ -22,4 +23,4 @@ original_name: input1
 map1: !Thing
   k: v
 other_name_len: '6'
-other_upper_1: 'MARCIO'
+other_upper_1: 'USERDOMAIN'
