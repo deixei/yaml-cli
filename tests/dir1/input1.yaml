@@ -1,12 +1,17 @@
 root:
   level1: 
     name: &tagname "input1"
+    v: "USERDOMAIN"
     level2:
       id: 1
       level3:
         name: "input1"
         code: "i3"
         date: "{{ get_date() }}"
+        ndt: "{{ get_non_fc() }}"
+        USERDOMAIN: "{{ get_env('USERDOMAIN') }}"
+        fake_USERDOMAIN: "{{ get_env('fake') }}"
+        USERDOMAIN_copy: "{{ get_env(root.level1.v) }}"
   array: 
     - name: "input1"
     - name: "input2"
@@ -14,6 +19,6 @@ root:
 
 original_name: *tagname
 map1: !Thing {k: v}
-other_name_len: "{{ root.level1.name | len}}"
+other_name_len: "{{ root.level1.name | len }}"
 
-other1: "{{ root.level1.name | upper }}"
+other_upper_1: "{{ root.level1.name | upper }}"

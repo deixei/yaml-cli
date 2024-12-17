@@ -1,13 +1,13 @@
 use clap::{Command, Arg};
 use serde_yaml::Value;
-use std::fs;
-use chrono::Utc;
+use std::{fs, ops::Index};
+use chrono::prelude::*;
 use std::path::Path;
 
 fn main() {
     let matches = Command::new("yw")
         .version("1.0")
-        .author("Author Name <author@example.com>")
+        .author("Marcio Parente <support@deixei.com>")
         .about("Merges YAML files")
         .subcommand(
             Command::new("merge")
@@ -38,6 +38,12 @@ fn main() {
                 ),
         )
         .get_matches();
+    
+    let config = read_config_file();
+    println!("Configuration loaded var1: {:?}", config["var1"].as_str().unwrap());
+    
+    let environment_variables = load_environment_variables();
+    println!("Environment variables ALLUSERSPROFILE: {:?}", environment_variables["ALLUSERSPROFILE"].as_str().unwrap());
 
     if let Some(matches) = matches.subcommand_matches("merge") {
         let input1_paths: &String = matches.get_one::<String>("input1").unwrap();
@@ -82,53 +88,34 @@ fn main() {
         let output_yaml = re.replace_all(&output_yaml, |caps: &regex::Captures| {
             let mut filter = "default";
             let mut key = caps.get(1).unwrap().as_str();
+            
             // if the key contains a pipe, it means it has a filter
             if key.contains("|") {
+                // this only handles filters with a single prefix element
                 let parts: Vec<&str> = key.split("|").collect();
                 key = parts[0].trim();
                 filter = parts[1].trim();
-                //print!("{} | {}", key, filter);
+                //DEBUG: print!("FILTER: {} | {}", key, filter);
             }
 
-            if key.contains("()") {
-                let parts: Vec<&str> = key.split("()").collect();
-                key = parts[0].trim();
 
-                // if the key is a function, call it
-                if key == "get_date" {
-                    return chrono::Utc::now().to_rfc3339();
-                }
 
-                return "".to_string();
+            // in case the key contains a function with paramenters (e.g. get_env('ALLUSERSPROFILE') or get_data('2021-01-01', '2021-01-31'))
+            if key.contains("(") && key.contains(")") {
+                return apply_function(key, &merged_yaml);
             }
+
             // trim the key
             key = key.trim();
             filter = filter.trim();
 
-            println!("key:{}", key);
-            println!("filter:{}", filter);
+            //DEBUG: println!("key:{}", key);
+            //DEBUG: println!("filter:{}", filter);
             let value = get_nested_value(&merged_yaml, key).unwrap();
             if value == &Value::Null {
                 return "".to_string();
             } else {
-                let final_value = value.as_str().unwrap();
-                if filter == "default" {
-                    return final_value.to_string();
-                }
-                else {
-                    // apply the filter
-                    // if filter == "upper", convert the value to uppercase
-                    if filter == "upper" {
-                        return final_value.to_uppercase();
-                    }
-                    if filter == "lower" {
-                        return final_value.to_lowercase();
-                    }
-                    if filter == "len" {
-                        return final_value.len().to_string();
-                    }
-                }
-                return final_value.to_string();
+                return apply_filters(value.as_str().unwrap(), filter);
             }
         });
         // Convert the result to a String
@@ -197,4 +184,146 @@ fn merge_yaml(base: &mut Value, other: &Value) {
             *base = other.clone();
         }
     }
+}
+
+
+// TODO Features
+// - read a configuration file, as yaml.
+// - read secrets from a file that is secure in the filesystem
+// - load the configurations as a static structure
+// - read environment variables
+
+fn read_config_file() -> Value {
+    // check if the file exists
+    let path = Path::new("config.yaml");
+    if path.exists() == false {
+        eprintln!("File does not exist: {}", path.display());
+        std::process::exit(1);
+    }
+    let config_file = fs::read_to_string("config.yaml").unwrap();
+    let config: Value = serde_yaml::from_str(&config_file).unwrap();
+    //DEBUG: println!("Config file loaded with: {:?}", config);
+    return config;
+}
+
+fn load_environment_variables() -> Value {
+    let env_vars_origin: Vec<(String, String)> = std::env::vars().collect();
+    // convert to a yaml Value, mapping key and value
+   
+    let mut env_vars = Value::Mapping(serde_yaml::Mapping::new());
+    for (key, value) in env_vars_origin {
+        env_vars.as_mapping_mut().unwrap().insert(Value::String(key), Value::String(value));
+    }
+    //DEBUG: println!("env_vars: {:?}", env_vars);
+
+    return env_vars;
+}
+
+fn apply_filters(value: &str, filter: &str) -> String {
+    // in case value is null or empty string return an empty string
+    if value == "" {
+        return "".to_string();
+    }
+
+    if filter == "default" || filter == "" {
+        return value.to_string();
+    }
+
+    if filter == "upper" {
+        return value.to_uppercase();
+    }
+
+    if filter == "lower" {
+        return value.to_lowercase();
+    }
+
+    if filter == "len" {
+        return value.len().to_string();
+    }
+
+    return value.to_string();
+
+}
+
+fn apply_function(function_statement: &str, merged_yaml: &Value,) -> String {
+    // a function_statement is a string that contains a function with parameters
+    // it can be a function with paramenters (e.g. get_env('ALLUSERSPROFILE') or get_data('2021-01-01', '2021-01-31'))
+    // or a function without parameters (e.g. get_date())
+    // or a function with a value key (e.g. get_value(root.level1.name))
+
+    if function_statement == "" {
+        return "".to_string();
+    }
+
+    if function_statement.contains("(") && function_statement.contains(")") {
+        // it is a function
+        let parts: Vec<&str> = function_statement.split("(").collect();
+        let function_name = parts[0].trim();
+        let params: Vec<&str> = parts[1].split(")").collect();
+        let params: Vec<&str> = params[0].split(",").collect();
+        let params: Vec<&str> = params.iter().map(|x| x.trim()).collect();
+
+        println!("function_statement: {}", function_statement);
+        println!("function_name: {}", function_name);
+        println!("params: {:?}", params);
+        
+        // Create a new vector to store the modified parameters
+        let mut modified_params: Vec<String> = Vec::new();
+
+        // params without quotes, like get_value(root.level1.name, 'demo_value'), need to get the value of the key
+        // if the key is not found, return the default value
+        if params != [""] {
+            for param in params.iter() {
+                if !param.contains("'") {
+                    println!("param: {}", param);
+
+                    let key = param.trim_matches('\'');
+                    let value = get_nested_value(&merged_yaml, key).unwrap();
+                    if value == &Value::Null {
+                        // if the value is not found, return the default value
+                        modified_params.push("default".to_string());
+                    } else {
+                        modified_params.push(value.as_str().unwrap().to_string());
+                    }
+                }
+                else {
+                    modified_params.push(param.trim_matches('\'').to_string());
+                }
+            }
+
+
+            // functions with parameters
+            if function_name == "get_env" {
+                // get the environment variable, if it does not exist, return an empty string
+                // log an error if the environment variable does not exist
+                let func_param_1 = modified_params.index(0);
+
+                let environment_variables = load_environment_variables();
+                let env_var: String = environment_variables.get(func_param_1).unwrap_or(&Value::String("".to_string())).as_str().unwrap().to_string(); 
+                if env_var == "" {
+                    eprintln!("Environment variable not found or empty: {}", func_param_1);
+                }
+                return env_var;
+            }
+    
+            // if the function is get_data, get the date, this is an example of a function with parameters
+            if function_name == "get_data" {
+                let start_date = modified_params.index(0);
+                let end_date = modified_params.index(1);
+                return format!("{} - {}", start_date, end_date);
+            }
+
+
+        }
+
+        // functions without parameters
+
+        // if the function is get_date, get the date
+        if function_name == "get_date" {
+            return Utc::now().to_rfc3339();
+        }
+
+    }
+
+    return "".to_string();
 }
