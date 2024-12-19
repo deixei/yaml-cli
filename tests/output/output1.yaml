@@ -5,10 +5,11 @@ root:
     l: userdomain
     level2:
       id: 1
+      get_date: '2024-12-19T19:30:09.814007400+00:00'
       level3:
         name: input_level_3
         code: i3
-        date: '2024-12-17T18:49:54.313951500+00:00'
+        date: '2024-12-19T19:30:09.814195900+00:00'
         ndt: ''
         USERDOMAIN: 'DX2023'
         fake_USERDOMAIN: ''
@@ -23,4 +24,8 @@ original_name: input1
 map1: !Thing
   k: v
 other_name_len: '6'
-other_upper_1: 'USERDOMAIN'
+other_upper_1: 'DX2023'
+url: www.deixei.com
+prep: 'www.deixei.com'
+n1: 'marcio'
+demo_concat: 'marciouserdomain'

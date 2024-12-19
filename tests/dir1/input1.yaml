@@ -5,6 +5,7 @@ root:
     l: "userdomain"
     level2:
       id: 1
+      get_date: "{{get_date()}}"
       level3:
         name: "input1"
         code: "i3"
@@ -21,5 +22,10 @@ root:
 original_name: *tagname
 map1: !Thing {k: v}
 other_name_len: "{{ root.level1.name | len }}"
-
 other_upper_1: "{{ root.level1.l | upper | get_env }}"
+
+url: "www.deixei.com"
+prep: "{{ url }}"
+n1: "{{ root.level1.name    }}"
+
+demo_concat: "{{ concat(root.level1.name, root.level1.l) }}"
