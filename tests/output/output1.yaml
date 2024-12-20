@@ -5,11 +5,11 @@ root:
     l: userdomain
     level2:
       id: 1
-      get_date: '2024-12-19T19:30:09.814007400+00:00'
+      get_date: '2024-12-20T07:11:08.200504100+00:00'
       level3:
         name: input_level_3
         code: i3
-        date: '2024-12-19T19:30:09.814195900+00:00'
+        date: '2024-12-20T07:11:08.200709700+00:00'
         ndt: ''
         USERDOMAIN: 'DX2023'
         fake_USERDOMAIN: ''
@@ -20,6 +20,17 @@ root:
   - name: input2
   - name: input3
   - name: add1
+data:
+  name: ThisIsATest_input2
+  env: UserDomain
+  tag1: input2
+test_cases_filter:
+- name: 'THISISATEST_INPUT2'
+- name: 'thisisatest_input2'
+- name: '18'
+- name: 'false'
+- name: 'true'
+- name: 'DX2023'
 original_name: input1
 map1: !Thing
   k: v
@@ -29,3 +40,10 @@ url: www.deixei.com
 prep: 'www.deixei.com'
 n1: 'marcio'
 demo_concat: 'marciouserdomain'
+command:
+- echo marcio
+test_cases_fn:
+- name: '2024-12-20T07:11:08.204380300+00:00'
+- name: 'ThisIsATest_input2 - UserDomain'
+- name: 'ThisIsATest_input2UserDomain'
+- 'input2': 'marcio'

@@ -7,3 +7,11 @@ root:
         name: "input_level_3"
   array: 
     - name: "add1"
+data:
+  name: "ThisIsATest_input2"
+  tag1: "input2"
+test_cases_fn:
+  - name: "{{ get_date() }}"
+  - name: "{{ get_data(data.name, data.env) }}"
+  - name: "{{ concat(data.name, data.env) }}"
+  - "{{ data.tag1 }}": "{{ root.level1.name }}"

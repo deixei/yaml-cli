@@ -18,6 +18,17 @@ root:
     - name: "input1"
     - name: "input2"
     - name: "input3"
+data:
+  name: "ThisIsATest"
+  env: "UserDomain"
+test_cases_filter:
+  - name: "{{ data.name | upper }}"
+  - name: "{{ data.name | lower }}"
+  - name: "{{ data.name | len }}"
+  - name: "{{ data.name | is_empty }}"
+  - name: "{{ data.name | is_not_empty }}"
+  - name: "{{ data.env | upper | get_env }}"
+
 
 original_name: *tagname
 map1: !Thing {k: v}
@@ -29,3 +40,6 @@ prep: "{{ url }}"
 n1: "{{ root.level1.name    }}"
 
 demo_concat: "{{ concat(root.level1.name, root.level1.l) }}"
+
+command:
+  - "echo {{ root.level1.name }}"

@@ -230,6 +230,7 @@ fn apply_function(function_statement: &str, merged_yaml: &Value) -> String {
         println!("apply_function :: function_statement: {}", function_statement);
         
         // Create a new vector to store the modified parameters
+        // in reality this needs to be a vector of Value, but for now it is a vector of String
         let mut modified_params: Vec<String> = Vec::new();
 
         // params without quotes, like get_value(root.level1.name, 'demo_value'), need to get the value of the key
@@ -324,6 +325,7 @@ fn apply_function(function_statement: &str, merged_yaml: &Value) -> String {
 }
 
 fn handle_pipe(pipe_statement: &str, merged_yaml: &Value) -> String {
+    // at the moment the output of a pipe is a string, but it should be a Value
     let mut parts: Vec<&str> = pipe_statement.split('|').collect();
     if parts.len() < 2 {
         let result = apply_function(pipe_statement, merged_yaml);
@@ -347,6 +349,7 @@ fn handle_pipe(pipe_statement: &str, merged_yaml: &Value) -> String {
     let action = parts[1].trim();
     parts.drain(0..2);
 
+    // this is an assumption that the input params are always strings, but is should be a Value.
     let function_statement = format!("{}('{}')", action, value);
     let result = apply_function(&function_statement, merged_yaml);
 
