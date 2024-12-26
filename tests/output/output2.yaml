@@ -18,3 +18,5 @@ resources:
     - location: 'West Europe'
     - iteration: '001'
     - version: '1.0.0'
+commands:
+- cmd: az group create --name 'demo1-dev-euw-001' --location 'West Europe'

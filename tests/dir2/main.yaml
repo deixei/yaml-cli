@@ -7,3 +7,6 @@ resources:
       - "location": "{{ instance.location }}"
       - "iteration": "{{ instance.iteration }}"
       - "version": "{{ version }}"
+
+commands:
+  - cmd: "az group create --name '{{ resources.resource_group.name }}' --location '{{ resources.resource_group.location }}'"
