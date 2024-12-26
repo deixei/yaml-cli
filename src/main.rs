@@ -92,45 +92,28 @@ fn main() {
         }
         
         // Change the value of root.level1.name to "marcio"
-        set_nested_value(&mut merged_yaml, "root.level1.name", Value::String("marcio".to_string()));
+        //set_nested_value(&mut merged_yaml, "version", Value::String("marcio".to_string()));
 
         // Access a nested value using a path
-        if let Some(nested_value) = get_nested_value(&merged_yaml, "root.level1.name") {
-            println!("Nested value: {:?}", nested_value);
+        if let Some(nested_value) = get_nested_value(&merged_yaml, "version") {
+            println!("version: {:?}", nested_value);
         } else {
-            println!("Nested value not found");
+            println!("version not found");
         }        
 
         let output_yaml = serde_yaml::to_string(&merged_yaml).unwrap();
 
-        // find string inside {{ }} and replace it with the value of the nested key
-        let re = regex::Regex::new(r"\{\{([^{}]*)\}\}").unwrap();
-        let output_yaml = re.replace_all(&output_yaml, |caps: &regex::Captures| {
-            //let mut filter = "default";
-            let key = caps.get(1).unwrap().as_str();
-            
-            // if the key contains a pipe, it means it has a filter
-            if key.contains("|") {
-                return handle_pipe(key, &merged_yaml);
-            }
+        let mut output_yaml_string = output_yaml.to_string();
+        while output_yaml_string.contains("{{") {
+            output_yaml_string = replace_placeholders(&output_yaml_string, &merged_yaml);
+        }
 
-            // in case the key contains a function with paramenters (e.g. get_env('ALLUSERSPROFILE') or get_data('2021-01-01', '2021-01-31'))
-            if key.contains("(") && key.contains(")") {
-                return apply_function(key, &merged_yaml);
-            }
+        if output_yaml_string.contains("{{") {
+            eprintln!("Output path contains unresolved variables: {}", output_yaml_string);
+            std::process::exit(1);
+        }
 
-            if let Some(nested_value) = get_nested_value(&merged_yaml, key) {
-                println!("Nested value: {:?}", nested_value);
-                return nested_value.as_str().unwrap().to_string();
-            } else {
-                println!("Nested value not found");
-            }  
-
-            return "".to_string();
-        });
-        // Convert the result to a String
-        let output_yaml = output_yaml.to_string();
-        fs::write(output_path, output_yaml).unwrap();
+        fs::write(output_path, output_yaml_string).unwrap();
     }
 
 
@@ -161,12 +144,32 @@ fn main() {
 
 }
 
+
+fn replace_placeholders(output_yaml: &str, merged_yaml: &Value) -> String {
+    let re = regex::Regex::new(r"\{\{([^{}]*)\}\}").unwrap();
+    re.replace_all(output_yaml, |caps: &regex::Captures| {
+        let key = caps.get(1).unwrap().as_str().trim();
+        //DEBUG: println!("Key: {:?}", key);
+
+        if key.contains("|") {
+            handle_pipe(key, merged_yaml)
+        } else if key.contains("(") && key.contains(")") {
+            apply_function(key, merged_yaml)
+        } else if let Some(nested_value) = get_nested_value(merged_yaml, key) {
+            //println!("Nested value: {:?}", nested_value);
+            nested_value.as_str().unwrap().to_string()
+        } else {
+            //println!("Nested value not found");
+            "".to_string()
+        }
+    }).to_string()
+}
+
 fn get_nested_value<'a>(yaml_value: &'a Value, path: &str) -> Option<&'a Value> {
-    let mut current_value = yaml_value;
-    for key in path.split('.') {
-        current_value = current_value.get(key.trim())?;
-    }
-    Some(current_value)
+    //DEBUG: println!("yaml_value: {:?}", yaml_value);
+    path.split('.')
+        .map(str::trim)
+        .try_fold(yaml_value, |current_value, key| current_value.get(key))
 }
 
 fn set_nested_value(value: &mut Value, path: &str, new_value: Value) {
@@ -181,7 +184,7 @@ fn set_nested_value(value: &mut Value, path: &str, new_value: Value) {
             current_value = current_value
                 .get_mut(*key)
                 .unwrap_or_else(|| panic!("Key not found: {}", key));
-            
+
             // if the key does not exist, create it
             if let Value::Null = current_value {
                 *current_value = Value::Mapping(serde_yaml::Mapping::new());
@@ -280,7 +283,7 @@ fn apply_function(function_statement: &str, merged_yaml: &Value) -> String {
         let params: Vec<&str> = params[0].split(",").collect();
         let params: Vec<&str> = params.iter().map(|x| x.trim()).collect();
 
-        println!("apply_function :: function_statement: {}", function_statement);
+        //DEBUG: println!("apply_function :: function_statement: {}", function_statement);
         
         // Create a new vector to store the modified parameters
         // in reality this needs to be a vector of Value, but for now it is a vector of String
@@ -291,6 +294,7 @@ fn apply_function(function_statement: &str, merged_yaml: &Value) -> String {
         if params != [""] {
             for param in params.iter() {
                 if !param.contains("'") {
+                    //DEBUG: 
                     //DEBUG: println!("param: {}", param);
 
                     let key = param.trim_matches('\'');
@@ -359,6 +363,33 @@ fn apply_function(function_statement: &str, merged_yaml: &Value) -> String {
                 }
                 return config_var;
             }
+
+            if function_name == "lookup_config" {
+                // lookup_config('azure.prefix', 'resource_group')
+                let func_param_1 = modified_params.index(0);
+                let func_param_2 = modified_params.index(1);
+
+                let config_variables = read_config_file();
+                //println!("config_variables: {:?}", config_variables);
+                let config_data = get_nested_value(&config_variables, func_param_1).unwrap();
+                //println!("config_data: {:?}", config_data);
+                
+                // config_data is a Value, so we need to convert it to a dictionary
+                let config_data = config_data.as_sequence().unwrap();
+                // find in the dictionary the key func_param_1 as "id" and return "text"
+                
+                let result = config_data.iter()
+                    .find(|x| x.get("id").and_then(|id| id.as_str()) == Some(func_param_2))
+                    .and_then(|x| x.get("text").and_then(|text| text.as_str()))
+                    .unwrap_or_else(|| {
+                        eprintln!("Error: func_param_2 '{}' not found", func_param_2);
+                        ""
+                    });
+
+                
+                return result.to_string();
+
+            }
     
             // if the function is get_data, get the date, this is an example of a function with parameters
             if function_name == "get_data" {
@@ -393,7 +424,7 @@ fn handle_pipe(pipe_statement: &str, merged_yaml: &Value) -> String {
     let mut parts: Vec<&str> = pipe_statement.split('|').collect();
     if parts.len() < 2 {
         let result = apply_function(pipe_statement, merged_yaml);
-        println!("END PIPE: {}", result);
+        //println!("END PIPE: {}", result);
         return result;
     }
 
@@ -418,14 +449,14 @@ fn handle_pipe(pipe_statement: &str, merged_yaml: &Value) -> String {
     let result = apply_function(&function_statement, merged_yaml);
 
     if parts.is_empty() {
-        println!("NO PIPE: {}", result);
+        //println!("NO PIPE: {}", result);
         return result;
     }
 
     let next_pipe = parts.join("|");
     let new_pipe_statement = format!("{}|{}", result, next_pipe);
 
-    println!("NEW PIPE: {}", new_pipe_statement);
+    //println!("NEW PIPE: {}", new_pipe_statement);
 
     handle_pipe(&new_pipe_statement, merged_yaml)
 }

@@ -1,3 +1,4 @@
+version: '1.0.0'
 root:
   level1: 
     name: &tagname "input1"
@@ -22,8 +23,8 @@ data:
   name: "ThisIsATest"
   env: "UserDomain"
 test_cases_filter:
-  - name: "{{ data.name | upper }}"
   - name: "{{ data.name | lower }}"
+  - name: "{{ data.name | upper }}"
   - name: "{{ data.name | len }}"
   - name: "{{ data.name | is_empty }}"
   - name: "{{ data.name | is_not_empty }}"
@@ -43,4 +44,5 @@ n1: "{{ root.level1.name    }}"
 demo_concat: "{{ concat(root.level1.name, root.level1.l) }}"
 
 command:
+  - "echo {{ root.level1.name }}"
   - "echo {{ root.level1.name }}"

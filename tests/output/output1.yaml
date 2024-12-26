@@ -1,15 +1,16 @@
+version: 1.0.0
 root:
   level1:
-    name: marcio
+    name: input2
     v: USERDOMAIN
     l: userdomain
     level2:
       id: 1
-      get_date: '2024-12-23T07:31:09.069446900+00:00'
+      get_date: '2024-12-26T12:18:35.240545700+00:00'
       level3:
         name: input_level_3
         code: i3
-        date: '2024-12-23T07:31:09.069565900+00:00'
+        date: '2024-12-26T12:18:35.240598900+00:00'
         ndt: ''
         USERDOMAIN: 'DX2023'
         fake_USERDOMAIN: ''
@@ -25,8 +26,8 @@ data:
   env: UserDomain
   tag1: input2
 test_cases_filter:
-- name: 'THISISATEST_INPUT2'
 - name: 'thisisatest_input2'
+- name: 'THISISATEST_INPUT2'
 - name: '18'
 - name: 'false'
 - name: 'true'
@@ -39,12 +40,13 @@ other_name_len: '6'
 other_upper_1: 'DX2023'
 url: www.deixei.com
 prep: 'www.deixei.com'
-n1: 'marcio'
-demo_concat: 'marciouserdomain'
+n1: 'input2'
+demo_concat: 'input2userdomain'
 command:
-- echo marcio
+- echo input2
+- echo input2
 test_cases_fn:
-- name: '2024-12-23T07:31:09.074023500+00:00'
+- name: '2024-12-26T12:18:35.242372900+00:00'
 - name: 'ThisIsATest_input2 - UserDomain'
 - name: 'ThisIsATest_input2UserDomain'
-- 'input2': 'marcio'
+- 'input2': 'input2'

@@ -1,0 +1,9 @@
+resources:
+  resource_group:
+    name: "{{ concat('demo1-', ref.name) }}"
+    location: "{{ instance.location }}"
+    tags:
+      - "stage": "{{ instance.stage }}"
+      - "location": "{{ instance.location }}"
+      - "iteration": "{{ instance.iteration }}"
+      - "version": "{{ version }}"

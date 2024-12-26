@@ -1,0 +1,20 @@
+version: 1.0.0
+instance:
+  stage: dev
+  stage_code: d
+  location: West Europe
+  location_code: euw
+  iteration: '001'
+ref:
+  name: 'dev-euw-001'
+  name_short: 'deuw001'
+  demo: 'rg'
+resources:
+  resource_group:
+    name: 'demo1-dev-euw-001'
+    location: 'West Europe'
+    tags:
+    - stage: 'dev'
+    - location: 'West Europe'
+    - iteration: '001'
+    - version: '1.0.0'

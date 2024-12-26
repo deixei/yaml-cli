@@ -1,0 +1,11 @@
+version: '1.0.0'
+instance:
+  stage: dev
+  stage_code: d
+  location: 'West Europe'
+  location_code: 'euw'
+  iteration: '001'
+ref:
+  name: "{{ instance.stage }}-{{ instance.location_code }}-{{ instance.iteration }}"
+  name_short: "{{ instance.stage_code }}{{ instance.location_code }}{{ instance.iteration }}"
+  demo: "{{ lookup_config('azure.prefix', 'resource_group') }}"
