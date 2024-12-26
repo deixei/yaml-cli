@@ -1,6 +1,6 @@
 use clap::{Command, Arg};
 use serde_yaml::Value;
-use std::{f32::consts::E, fs, ops::Index};
+use std::{fs, ops::Index};
 use chrono::prelude::*;
 use std::path::Path;
 
@@ -37,12 +37,32 @@ fn main() {
                         .required(true),
                 ),
         )
+        .subcommand(
+            Command::new("execute")
+                .about("Executes commands found in YAML")
+                .arg(
+                    Arg::new("input1")
+                        .short('a')
+                        .long("input1")
+                        .value_name("FILE")
+                        .help("Sets the input 1 file, for execution")
+                        .required(true),
+                )
+                .arg(
+                    Arg::new("output")
+                        .short('o')
+                        .long("output")
+                        .value_name("FILE")
+                        .help("Sets the output file, for execution results")
+                        .required(true),
+                ),
+        )        
         .get_matches();
     
-    let config = read_config_file();
+    //let config = read_config_file();
     //println!("Configuration loaded var1: {:?}", config["var1"].as_str().unwrap());
     
-    let environment_variables = load_environment_variables();
+    //let environment_variables = load_environment_variables();
     //println!("Environment variables ALLUSERSPROFILE: {:?}", environment_variables["ALLUSERSPROFILE"].as_str().unwrap());
 
     if let Some(matches) = matches.subcommand_matches("merge") {
@@ -112,6 +132,33 @@ fn main() {
         let output_yaml = output_yaml.to_string();
         fs::write(output_path, output_yaml).unwrap();
     }
+
+
+    if let Some(matches) = matches.subcommand_matches("execute") {
+        let input_path: &String = matches.get_one::<String>("input1").unwrap();
+        let output_path = matches.get_one::<String>("output").unwrap();
+
+        let mut yaml = Value::Null;
+        let mut output_yaml = Value::Null;
+
+        let path_in = Path::new(input_path);
+        let path_out = Path::new(output_path);
+
+        if path_in.exists() == false {
+            eprintln!("File does not exist: {}", input_path);
+            std::process::exit(1);
+        }
+
+        merge_yaml_file(path_in, &mut yaml);
+
+        set_nested_value(&mut output_yaml, "execution.date", Value::String("{{get_date()}}".to_string()));
+
+        let output_yaml_string = serde_yaml::to_string(&output_yaml).unwrap();
+
+        save_to_file(path_out, &output_yaml_string);
+
+    }
+
 }
 
 fn get_nested_value<'a>(yaml_value: &'a Value, path: &str) -> Option<&'a Value> {
@@ -134,8 +181,14 @@ fn set_nested_value(value: &mut Value, path: &str, new_value: Value) {
             current_value = current_value
                 .get_mut(*key)
                 .unwrap_or_else(|| panic!("Key not found: {}", key));
+            
+            // if the key does not exist, create it
+            if let Value::Null = current_value {
+                *current_value = Value::Mapping(serde_yaml::Mapping::new());
+            }
         }
     }
+
 }
 
 fn merge_yaml_file(path: &Path, merged_yaml: &mut Value) {
@@ -295,6 +348,17 @@ fn apply_function(function_statement: &str, merged_yaml: &Value) -> String {
                 }
                 return env_var;
             }
+
+            if function_name == "get_config" {
+                let func_param_1 = modified_params.index(0);
+
+                let config_variables = read_config_file();
+                let config_var: String = config_variables.get(func_param_1).unwrap_or(&Value::String("".to_string())).as_str().unwrap().to_string(); 
+                if config_var == "" {
+                    eprintln!("Environment variable not found or empty: {}", func_param_1);
+                }
+                return config_var;
+            }
     
             // if the function is get_data, get the date, this is an example of a function with parameters
             if function_name == "get_data" {
@@ -364,4 +428,10 @@ fn handle_pipe(pipe_statement: &str, merged_yaml: &Value) -> String {
     println!("NEW PIPE: {}", new_pipe_statement);
 
     handle_pipe(&new_pipe_statement, merged_yaml)
+}
+
+
+
+fn save_to_file(output_path: &Path, output_yaml: &String) {
+    fs::write(output_path, output_yaml).unwrap();
 }

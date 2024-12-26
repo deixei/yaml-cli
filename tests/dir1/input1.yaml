@@ -28,6 +28,7 @@ test_cases_filter:
   - name: "{{ data.name | is_empty }}"
   - name: "{{ data.name | is_not_empty }}"
   - name: "{{ data.env | upper | get_env }}"
+  - name: "{{ 'var1' | get_config }}"
 
 
 original_name: *tagname

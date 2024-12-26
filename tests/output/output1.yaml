@@ -5,11 +5,11 @@ root:
     l: userdomain
     level2:
       id: 1
-      get_date: '2024-12-20T07:11:08.200504100+00:00'
+      get_date: '2024-12-23T07:31:09.069446900+00:00'
       level3:
         name: input_level_3
         code: i3
-        date: '2024-12-20T07:11:08.200709700+00:00'
+        date: '2024-12-23T07:31:09.069565900+00:00'
         ndt: ''
         USERDOMAIN: 'DX2023'
         fake_USERDOMAIN: ''
@@ -31,6 +31,7 @@ test_cases_filter:
 - name: 'false'
 - name: 'true'
 - name: 'DX2023'
+- name: 'var1_config_marcio'
 original_name: input1
 map1: !Thing
   k: v
@@ -43,7 +44,7 @@ demo_concat: 'marciouserdomain'
 command:
 - echo marcio
 test_cases_fn:
-- name: '2024-12-20T07:11:08.204380300+00:00'
+- name: '2024-12-23T07:31:09.074023500+00:00'
 - name: 'ThisIsATest_input2 - UserDomain'
 - name: 'ThisIsATest_input2UserDomain'
 - 'input2': 'marcio'
