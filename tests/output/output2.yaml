@@ -19,4 +19,20 @@ resources:
     - iteration: '001'
     - version: '1.0.0'
 commands:
-- cmd: az group create --name 'demo1-dev-euw-001' --location 'West Europe'
+- task:
+    name: Create Resource Group
+    description: Create the resource group 'demo1-dev-euw-001'
+    cmd: az group create --name 'demo1-dev-euw-001' --location 'West Europe'
+    output: out.demo
+    execute: false
+- task:
+    cmd: dir
+    
+- loop:
+    for_each: ''
+    task:
+      name: Create 
+      description: Create the 
+      cmd: az  create --name 'demo1-dev-euw-001' --resource-group 'demo1-dev-euw-001'
+      output: out.
+- cmd.sh: echo "Hello, World!"

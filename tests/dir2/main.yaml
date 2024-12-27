@@ -9,4 +9,15 @@ resources:
       - "version": "{{ version }}"
 
 commands:
-  - cmd: "az group create --name '{{ resources.resource_group.name }}' --location '{{ resources.resource_group.location }}'"
+  - task:
+      name: "Create Resource Group"
+      description: "Create the resource group '{{ resources.resource_group.name }}'"
+      cmd: "az group create --name '{{ resources.resource_group.name }}' --location '{{ resources.resource_group.location }}'"
+      output: "out.demo"
+  - loop:
+      for_each: "{{ azure.prefix }}"
+      task:
+        name: "Create {{ item.id }}"
+        description: "Create the {{ item.id }}"
+        cmd: "az {{ item.id }} create --name '{{ resources.resource_group.name }}{{ item.text }}' --resource-group '{{ resources.resource_group.name }}'"
+        output: "out.{{ item.id }}"

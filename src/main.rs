@@ -134,12 +134,71 @@ fn main() {
 
         merge_yaml_file(path_in, &mut yaml);
 
-        set_nested_value(&mut output_yaml, "execution.date", Value::String("{{get_date()}}".to_string()));
+        //set_nested_value(&mut output_yaml, "execution.date", Value::String("{{get_date()}}".to_string()));
+
+        let commands = get_nested_value(&yaml, "commands").unwrap();
+        if commands.is_null() {
+            eprintln!("Commands not found in the input file");
+            std::process::exit(1);
+        }
+        let commands = commands.as_sequence().unwrap();
+        let mut command_index = 0;
+        for command in commands.iter() {
+            command_index += 1;
+            let default_name: String = format!("Command Index {}", command_index);
+            let default_output: String = format!("output_{}", command_index);
+            let task = command.as_mapping().unwrap();
+
+            // in case task key is eq to "task" print a task, in case of "loop" print a loop command
+            if let Some(task) = task.get(&Value::String("task".to_string())) {
+                //println!("Task: {:?}", task);
+                // a task must have a cmd, and optionally a name, description, output, and a execute flag
+                
+                let cmd = task.get(&Value::String("cmd".to_string())).unwrap().as_str().unwrap();
+                let name = task.get(&Value::String("name".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_name);
+                let description = task.get(&Value::String("description".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or("None");
+                let output = task.get(&Value::String("output".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_output);
+                let execute = task.get(&Value::String("execute".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(true);
+
+                if execute {
+                    //println!("Executing: {}", cmd);
+                    let display_msg = format!("Executing: {}: {}", name, description);
+                    println!("{}", display_msg);
+                    let output_msg = format!("Output: {}", output);
+                    println!("{}", output_msg);
+
+                    // execute the command
+                    let execute_command_output = std::process::Command::new("cmd").arg("/c").arg(cmd).output().unwrap();
+                    let execute_command_output_value = Value::String(String::from_utf8_lossy(&execute_command_output.stdout).to_string());
+                    
+                    //println!("Command Result: {}", execute_command_output_str);
+                    // create a Value mapping with the output of the command, and the key as the output index
+                    //let mut v = Value::Mapping(serde_yaml::Mapping::new());
+                    //v.as_mapping_mut().unwrap().insert(Value::String(output.to_string()), Value::String(execute_command_output_str.to_string()));
+
+                    println!("Output: {:?}", execute_command_output_value);
+
+                    set_nested_value(&mut output_yaml, output, execute_command_output_value);
+
+
+                } else {
+                    println!("SKIP: Not executing: {}", cmd);
+                }
+
+            } else if let Some(loop_command) = task.get(&Value::String("loop".to_string())) {
+                println!("Loop: {:?}", loop_command);
+            } else if let Some(conditional_command) = task.get(&Value::String("cmd.sh".to_string())) {
+                println!("cmd.sh: {:?}", conditional_command);
+            } else {
+                eprintln!("Command task not known in the input file");
+                //std::process::exit(1);
+            }
+            
+            //println!("Command: {:?}", task);
+        }
 
         let output_yaml_string = serde_yaml::to_string(&output_yaml).unwrap();
-
         save_to_file(path_out, &output_yaml_string);
-
     }
 
 }
@@ -173,6 +232,7 @@ fn get_nested_value<'a>(yaml_value: &'a Value, path: &str) -> Option<&'a Value> 
 }
 
 fn set_nested_value(value: &mut Value, path: &str, new_value: Value) {
+    // this function is to set a value in a nested path, updating the value if exists, or creating it if it does not exist
     let mut current_value = value;
     let keys: Vec<&str> = path.split('.').collect();
     for (i, key) in keys.iter().enumerate() {
@@ -187,11 +247,11 @@ fn set_nested_value(value: &mut Value, path: &str, new_value: Value) {
 
             // if the key does not exist, create it
             if let Value::Null = current_value {
-                *current_value = Value::Mapping(serde_yaml::Mapping::new());
+                let mut map = Value::Mapping(serde_yaml::Mapping::new());
+                map.as_mapping_mut().unwrap().insert(Value::String(key.to_string()), new_value.clone());
             }
         }
     }
-
 }
 
 fn merge_yaml_file(path: &Path, merged_yaml: &mut Value) {
