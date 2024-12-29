@@ -1,14 +1,3 @@
-version: 1.0.0
-instance:
-  stage: dev
-  stage_code: d
-  location: West Europe
-  location_code: euw
-  iteration: '001'
-ref:
-  name: 'dev-euw-001'
-  name_short: 'deuw001'
-  demo: 'rg'
 resources:
   resource_group:
     name: 'demo1-dev-euw-001'
@@ -20,14 +9,13 @@ resources:
     - version: '1.0.0'
 commands:
 - task:
-    name: Create Resource Group
-    description: Create the resource group 'demo1-dev-euw-001'
-    cmd: az group create --name 'demo1-dev-euw-001' --location 'West Europe'
-    output: out.demo
-    execute: false
+    name: Linux command to list files
+    description: tell me more about the files
+    cmd: ls
 - task:
+    name: List directories
+    description: this is another command
     cmd: dir
-    
 - loop:
     for_each: ''
     task:
@@ -35,4 +23,14 @@ commands:
       description: Create the 
       cmd: az  create --name 'demo1-dev-euw-001' --resource-group 'demo1-dev-euw-001'
       output: out.
-- cmd.sh: echo "Hello, World!"
+version: 1.0.0
+instance:
+  stage: dev
+  stage_code: d
+  location: West Europe
+  location_code: euw
+  iteration: '001'
+ref:
+  name: 'dev-euw-001'
+  name_short: 'deuw001'
+  demo: 'rg'
