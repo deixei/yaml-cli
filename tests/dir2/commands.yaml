@@ -1,11 +1,21 @@
 ## cargo run -- execute --input1 tests/dir2/commands.yaml --output tests/output/execute_output2.yaml
 
 commands:
-- task:
+- os.win.cmd:
     name: Linux command to list files
     description: tell me more about the files
     cmd: ls
-- task:
+- os.win.cmd:
     name: List directories
     description: this is another command
     cmd: dir
+- os.linux.cmd:
+    execute: false
+    name: Create 
+    description: Create the 
+    cmd: ls -al
+    output: out1
+- os.win.ps:
+    name: Get list of processes
+    description: this a PowerShell command
+    cmd: Get-Process    
