@@ -150,6 +150,13 @@ fn main() {
             let default_output: String = format!("outs.output_{}", command_index);
             let task = command.as_mapping().unwrap();
 
+            // some examples of commands to handle
+            // os.win.cmd: cmd: 'dir'
+            // os.linux.cmd: cmd: 'ls -la'
+            // os.win.ps: cmd: 'Get-Process'
+            // os.cmd: cmd: 'dir'
+            // loop.for: start: 1 end: 10 cmd: 'echo {{get_date()}}'
+
             // in case task key is eq to "task" print a task, in case of "loop" print a loop command
             if let Some(task) = task.get(&Value::String("task".to_string())) {
                 //println!("Task: {:?}", task);

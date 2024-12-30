@@ -1,0 +1,11 @@
+## cargo run -- execute --input1 tests/dir2/commands.yaml --output tests/output/execute_output2.yaml
+
+commands:
+- task:
+    name: Linux command to list files
+    description: tell me more about the files
+    cmd: ls
+- task:
+    name: List directories
+    description: this is another command
+    cmd: dir

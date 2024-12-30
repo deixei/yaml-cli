@@ -1,0 +1,9 @@
+outs:
+  output_1:
+    out: ''
+    err: "'ls' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n"
+    sts: 'exit code: 1'
+  output_2:
+    out: " Volume in drive C has no label.\r\n Volume Serial Number is 4A68-838D\r\n\r\n Directory of C:\\dev\\deixei\\yaml-cli\r\n\r\n16/12/2024  08:07    <DIR>          .\r\n10/11/2024  09:07    <DIR>          ..\r\n10/11/2024  09:07             7,258 .gitignore\r\n10/11/2024  14:33            14,343 Cargo.lock\r\n10/11/2024  14:33               349 Cargo.toml\r\n26/12/2024  13:20               128 config.yaml\r\n10/11/2024  09:07             1,092 LICENSE\r\n27/12/2024  08:26             1,055 README.md\r\n16/12/2024  08:07    <DIR>          src\r\n10/11/2024  10:20    <DIR>          target\r\n26/12/2024  08:15    <DIR>          tests\r\n               6 File(s)         24,225 bytes\r\n               5 Dir(s)  1,352,660,570,112 bytes free\r\n"
+    err: ''
+    sts: 'exit code: 0'
