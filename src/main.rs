@@ -1,7 +1,7 @@
 use clap::{Command, Arg};
-use serde_yaml::{Mapping, Value};
+use serde_yaml::Value;
 use std::{fs, ops::Index};
-use chrono::{format::format, prelude::*};
+use chrono::prelude::*;
 use std::path::Path;
 
 fn main() {
@@ -168,6 +168,7 @@ fn main() {
                 //println!("Task: {:?}", task);
                 // a task must have a cmd, and optionally a name, description, output, and a execute flag
                 let execute: bool = task.get(&Value::String("execute".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(true);
+                let debug_flag: bool = task.get(&Value::String("debug".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(false);
                 let name = task.get(&Value::String("name".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_name);
                 let description = task.get(&Value::String("description".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or("None");
                     
@@ -177,13 +178,12 @@ fn main() {
                     counter_executed += 1;
                     let output = task.get(&Value::String("output".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_output);
                     if cfg!(target_os = "windows") {
-                        println!("Executing: {}", cmd);
+                        let display_msg = format!("### Executing: {}: {}", name, description);
+                        println!("{}", display_msg);
                     } else {
                         eprintln!("ERROR: Not a windows operating system: {}", cmd);
                         counter_errors += 1;
                     }
-                    let display_msg = format!("### Executing: {}: {}", name, description);
-                    println!("{}", display_msg);
 
                     // execute the command
                     let execute_command_output = std::process::Command::new("cmd").arg("/c").arg(cmd).output().unwrap();
@@ -201,7 +201,7 @@ fn main() {
                     set_nested_value(&mut output_yaml, &path1.as_str(), execute_command_output_value);
                     set_nested_value(&mut output_yaml, &path2.as_str(), execute_command_output_error);
                     set_nested_value(&mut output_yaml, &path3.as_str(), execute_command_output_status);
-                    println!("### End: {:?}", output_yaml);
+                    if debug_flag {println!("### End: {:?}", output_yaml);}
 
                 } else {
                     println!("SKIP: Not executing: {:?}", task);
@@ -211,6 +211,7 @@ fn main() {
             } else if let Some(task) = task.get(&Value::String("os.linux.cmd".to_string())) {
                 counter_total += 1;
                 let execute: bool = task.get(&Value::String("execute".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(true);
+                let debug_flag: bool = task.get(&Value::String("debug".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(false);
                 let name = task.get(&Value::String("name".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_name);
                 let description = task.get(&Value::String("description".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or("None");
     
@@ -224,10 +225,10 @@ fn main() {
                         eprintln!("ERROR: Not a windows operating system: {}", cmd);
                         counter_errors += 1;
                     } else {
-                        println!("Executing: {}", cmd);
+                        let display_msg = format!("### Executing: {}: {}", name, description);
+                        println!("{}", display_msg);
                     }
-                    let display_msg = format!("### Executing: {}: {}", name, description);
-                    println!("{}", display_msg);
+                    
 
                     // execute the command
                     let execute_command_output = std::process::Command::new("sh").arg("/c").arg(cmd).output().unwrap();
@@ -245,7 +246,7 @@ fn main() {
                     set_nested_value(&mut output_yaml, &path1.as_str(), execute_command_output_value);
                     set_nested_value(&mut output_yaml, &path2.as_str(), execute_command_output_error);
                     set_nested_value(&mut output_yaml, &path3.as_str(), execute_command_output_status);
-                    println!("### End: {:?}", output_yaml);                    
+                    if debug_flag {println!("### End: {:?}", output_yaml);}                  
                 } else {
                     println!("SKIP: Not executing: {:?}", task);
                     counter_skipped += 1;
@@ -254,6 +255,7 @@ fn main() {
             } else if let Some(task) = task.get(&Value::String("os.win.ps".to_string())) {
                 counter_total += 1;
                 let execute: bool = task.get(&Value::String("execute".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(true);
+                let debug_flag: bool = task.get(&Value::String("debug".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(false);
                 let name = task.get(&Value::String("name".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_name);
                 let description = task.get(&Value::String("description".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or("None");
     
@@ -263,16 +265,16 @@ fn main() {
                     let output = task.get(&Value::String("output".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_output);
 
                     if cfg!(target_os = "windows") {
-                        println!("Executing: {}", cmd);
+                        let display_msg = format!("### Executing: {}: {}", name, description);
+                        println!("{}", display_msg);
+    
                     } else {
                         eprintln!("ERROR: Not a windows operating system: {}", cmd);
                         counter_errors += 1;
                     }
     
-                    println!("os.win.ps: {:?}", task); 
-                    let display_msg = format!("### Executing: {}: {}", name, description);
-                    println!("{}", display_msg);
-
+    
+    
                     // execute the command
                     let execute_command_output = std::process::Command::new("powershell").arg("-Command").arg(cmd).output().unwrap();
 
@@ -289,7 +291,7 @@ fn main() {
                     set_nested_value(&mut output_yaml, &path1.as_str(), execute_command_output_value);
                     set_nested_value(&mut output_yaml, &path2.as_str(), execute_command_output_error);
                     set_nested_value(&mut output_yaml, &path3.as_str(), execute_command_output_status);
-                    println!("### End: {:?}", output_yaml);                    
+                    if debug_flag {println!("### End: {:?}", output_yaml);}                    
                 } else {
                     println!("SKIP: Not executing: {:?}", task);
                     counter_skipped += 1;
@@ -298,6 +300,7 @@ fn main() {
             } else if let Some(task) = task.get(&Value::String("os.cmd".to_string())) {
                 counter_total += 1;
                 let execute: bool = task.get(&Value::String("execute".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(true);
+                let debug_flag: bool = task.get(&Value::String("debug".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(false);
                 let name = task.get(&Value::String("name".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_name);
                 let description = task.get(&Value::String("description".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or("None");
     
@@ -305,26 +308,134 @@ fn main() {
                     counter_executed += 1;
                     let cmd = task.get(&Value::String("cmd".to_string())).unwrap().as_str().unwrap();
                     let output = task.get(&Value::String("output".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_output);
-    
-                    println!("os.win.ps: {:?}", task); 
+                    let display_msg = format!("### Executing: {}: {}", name, description);
+                    println!("{}", display_msg);
+                    // execute the command
+                    let execute_command_output: std::process::Output;
+                    if cfg!(target_os = "windows") {
+                        execute_command_output = std::process::Command::new("cmd").arg("/c").arg(cmd).output().unwrap();
+                    } else {
+                        execute_command_output = std::process::Command::new("sh").arg("-c").arg(cmd).output().unwrap();
+                    }
+                    let execute_command_output_value = Value::String(String::from_utf8_lossy(&execute_command_output.stdout).to_string());
+                    let execute_command_output_error = Value::String(String::from_utf8_lossy(&execute_command_output.stderr).to_string());
+                    let execute_command_output_status = Value::String((&execute_command_output.status).to_string());
+                    
+                    let path1 = format!("{}.out", output);
+                    let path2 = format!("{}.err", output);
+                    let path3 = format!("{}.sts", output);
+
+                    println!("### Output: {:?}", execute_command_output_value);
+
+                    set_nested_value(&mut output_yaml, &path1.as_str(), execute_command_output_value);
+                    set_nested_value(&mut output_yaml, &path2.as_str(), execute_command_output_error);
+                    set_nested_value(&mut output_yaml, &path3.as_str(), execute_command_output_status);
+                    if debug_flag {println!("### End: {:?}", output_yaml);}
                 } else {
                     println!("SKIP: Not executing: {:?}", task);
                     counter_skipped += 1;
-                }            
-            } else if let Some(task) = task.get(&Value::String("loop".to_string())) {
+                }  
+            } else if let Some(task) = task.get(&Value::String("console.print".to_string())) {
                 counter_total += 1;
                 let execute: bool = task.get(&Value::String("execute".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(true);
+                let debug_flag: bool = task.get(&Value::String("debug".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(false);
+                let name = task.get(&Value::String("name".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_name);
+                let description = task.get(&Value::String("description".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or("None");
     
                 if execute {
                     counter_executed += 1;
-                    println!("Loop: {:?}", task);
+                    let message = task.get(&Value::String("message".to_string())).unwrap().as_str().unwrap();
+                    let output = task.get(&Value::String("output".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_output);
+                    let display_msg = format!("### Executing: {}: {}", name, description);
+                    println!("{}", display_msg);
+
+                    let execute_command_output_value = Value::String(message.to_string());
+
+                    println!("{:?}", message.to_string());
+
+                    let path1 = format!("{}.out", output);
+                    let path2 = format!("{}.err", output);
+                    let path3 = format!("{}.sts", output);
+
+                    set_nested_value(&mut output_yaml, &path1.as_str(), execute_command_output_value);
+                    set_nested_value(&mut output_yaml, &path2.as_str(), Value::String("".to_string()));
+                    set_nested_value(&mut output_yaml, &path3.as_str(), Value::String("0".to_string()));
+                    if debug_flag {println!("### End: {:?}", output_yaml);}
+
+                } else {
+                    println!("SKIP: Not executing: {:?}", task);
+                    counter_skipped += 1;
+                }                          
+            } else if let Some(task) = task.get(&Value::String("loop.for".to_string())) {
+                counter_total += 1;
+                let execute: bool = task.get(&Value::String("execute".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(true);
+                let debug_flag: bool = task.get(&Value::String("debug".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(false);
+    
+                if execute {
+                    counter_executed += 1;
+                    let name = task.get(&Value::String("name".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_name);
+                    let description = task.get(&Value::String("description".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or("None");
+
+                    let start = task.get(&Value::String("start".to_string())).unwrap().as_i64().unwrap();
+                    let end = task.get(&Value::String("end".to_string())).unwrap().as_i64().unwrap();
+                    let index_text = task.get(&Value::String("index".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or("index");
+
+                    let display_msg = format!("### Executing: {}: {}", name, description);
+                    println!("{}", display_msg);
+
+                    for i in start..end {
+                        let loop_tasks = task.get(&Value::String("tasks".to_string())).unwrap().as_sequence().unwrap();
+                        println!("### Loop: {}", i);
+                        println!("### Tasks: {:?}", loop_tasks);
+                    }
+
                 } else {
                     println!("SKIP: Not executing: {:?}", task);
                     counter_skipped += 1;
                 }
-            } else if let Some(task) = task.get(&Value::String("cmd.sh".to_string())) {
+            } else if let Some(task) = task.get(&Value::String("http.get".to_string())) {
                 counter_total += 1;
-                println!("cmd.sh: {:?}", task);
+                println!("http.get: {:?}", task);
+                // a task to get the content of a URL
+
+                let execute: bool = task.get(&Value::String("execute".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(true);
+                let debug_flag: bool = task.get(&Value::String("debug".to_string())).unwrap_or(&Value::Null).as_bool().unwrap_or(false);
+                let name = task.get(&Value::String("name".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_name);
+                let description = task.get(&Value::String("description".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or("None");
+
+                if execute {
+                    counter_executed += 1;
+                    let url = task.get(&Value::String("url".to_string())).unwrap().as_str().unwrap();
+                    let output = task.get(&Value::String("output".to_string())).unwrap_or(&Value::Null).as_str().unwrap_or(&default_output);
+                    let display_msg = format!("### Executing: {}: {}", name, description);
+                    println!("{}", display_msg);
+                    let client = reqwest::blocking::Client::new();
+                    let response = client.get(url).send().unwrap();
+                    
+                    if response.status().is_success() {
+                        let response_text = response.text().unwrap();
+                        let response_status = "Success".to_string();
+                        let path1 = format!("{}.out", output);
+                        let path2 = format!("{}.sts", output);
+                        
+                        //println!("### Output: {:?}", response_text);
+                        
+                        set_nested_value(&mut output_yaml, &path1.as_str(), Value::String(response_text));
+                        set_nested_value(&mut output_yaml, &path2.as_str(), Value::String(response_status));
+                        
+                        if debug_flag {println!("### End: {:?}", output_yaml);}
+                    } else {
+                        eprintln!("Error: {:?}", response.status());
+                        counter_errors += 1;
+                    }
+
+
+                } else {
+                    println!("SKIP: Not executing: {:?}", task);
+                    counter_skipped += 1;
+                }
+
+
             } else {
                 eprintln!("Command task not known in the input file");
                 //std::process::exit(1);
@@ -333,6 +444,7 @@ fn main() {
             //println!("Command: {:?}", task);
         }
 
+        println!("");
         println!("### Summary ###");
         println!("Total: {}; Executed: {}; Skipped: {}; Errors: {}", counter_total, counter_executed, counter_skipped, counter_errors);
         println!("######");

@@ -18,4 +18,26 @@ commands:
 - os.win.ps:
     name: Get list of processes
     description: this a PowerShell command
-    cmd: Get-Process    
+    cmd: Write-OutPut ('Hello World')    
+- http.get:
+    name: Get list of processes
+    description: this a PowerShell command
+    url: 'https://jsonplaceholder.typicode.com/posts/1'
+    output: out2
+
+- console.print:
+    name: Print to console
+    description: Print to console
+    message: 'Console print Hello World'
+
+- loop.for:
+    name: Loop through the list
+    description: Loop through the list
+    start: 1
+    end: 5
+    index: index
+    tasks:
+    - console.print:
+        name: "Print to console {{ index }}"
+        description: Print to console
+        message: 'Console print Hello World'
