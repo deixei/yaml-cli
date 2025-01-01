@@ -33,6 +33,7 @@ commands:
 - loop.for:
     name: Loop through the list
     description: Loop through the list
+    debug: true
     start: 1
     end: 5
     index: index
