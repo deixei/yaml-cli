@@ -254,16 +254,7 @@ fn run_subcommand_execute(matches: &clap::ArgMatches) {
         run_command_task(&mut command_index, command, &mut counter, &mut output_yaml);
     }
 
-    println!("");
-    print_banner_blue!("### Summary ##############################################");
-    print_info!(
-        "Total: {}; Executed: {}; Skipped: {}; Errors: {}",
-        counter.total,
-        counter.executed,
-        counter.skipped,
-        counter.errors
-    );
-    print_banner_blue!("##########################################################");
+    counter.display_summary();
 
     let output_yaml_string = serde_yaml::to_string(&output_yaml).unwrap();
     save_to_file(path_out, &output_yaml_string);
@@ -274,6 +265,21 @@ struct Counters {
     executed: i32,
     skipped: i32,
     errors: i32,
+}
+
+impl Counters {
+    fn display_summary(&self) {
+        println!("");
+        print_banner_blue!("### Summary ##############################################");
+        print_info!(
+            "Total: {}; Executed: {}; Skipped: {}; Errors: {}",
+            self.total,
+            self.executed,
+            self.skipped,
+            self.errors
+        );
+        print_banner_blue!("##########################################################");
+    }
 }
 
 #[derive(Debug)]
@@ -327,6 +333,10 @@ impl OSTask {
                 .to_string(),
         };
         return os_task;
+    }
+    fn display_message(&self) {
+        let display_msg = format!("{}: {}", self.name, self.description);
+        print_executing!("{}", display_msg);
     }
 }
 
@@ -382,6 +392,11 @@ impl ConsoleTask {
         };
         return console_task;
     }
+
+    fn display_message(&self) {
+        let display_msg = format!("{}: {}", self.name, self.description);
+        print_executing!("{}", display_msg);
+    }
 }
 
 #[derive(Debug)]
@@ -436,6 +451,10 @@ impl HTTPTask {
         };
         return http_task;
     }
+    fn display_message(&self) {
+        let display_msg = format!("{}: {}", self.name, self.description);
+        print_executing!("{}", display_msg);
+    }
 }
 
 fn run_command_task(
@@ -485,8 +504,7 @@ fn run_task_console_print(task: &ConsoleTask, counter: &mut Counters, output_yam
 
     if task.execute {
         counter.executed += 1;
-        let display_msg = format!("{}: {}", task.name, task.description);
-        print_executing!("{}", display_msg);
+        task.display_message();
 
         let execute_command_output_value = Value::String(task.message.to_string());
 
@@ -514,8 +532,7 @@ fn run_task_os_win_cmd(task: &OSTask, counter: &mut Counters, output_yaml: &mut 
         counter.executed += 1;
 
         if cfg!(target_os = "windows") {
-            let display_msg = format!("{}: {}", task.name, task.description);
-            print_executing!("{}", display_msg);
+            task.display_message();
         } else {
             print_error!("ERROR: Not a windows operating system: {}", task.cmd);
             counter.errors += 1;
@@ -562,8 +579,7 @@ fn run_task_os_linux_cmd(task: &OSTask, counter: &mut Counters, output_yaml: &mu
             print_error!("ERROR: Not a windows operating system: {}", task.cmd);
             counter.errors += 1;
         } else {
-            let display_msg = format!("{}: {}", task.name, task.description);
-            print_executing!("{}", display_msg);
+            task.display_message();
         }
 
         // execute the command
@@ -604,8 +620,7 @@ fn run_task_os_win_ps(task: &OSTask, counter: &mut Counters, output_yaml: &mut V
         counter.executed += 1;
 
         if cfg!(target_os = "windows") {
-            let display_msg = format!("{}: {}", task.name, task.description);
-            print_executing!("{}", display_msg);
+            task.display_message();
         } else {
             print_error!("ERROR: Not a windows operating system: {}", task.cmd);
             counter.errors += 1;
@@ -648,8 +663,7 @@ fn run_task_os_cmd(task: &OSTask, counter: &mut Counters, output_yaml: &mut Valu
     if task.execute {
         counter.executed += 1;
 
-        let display_msg = format!("{}: {}", task.name, task.description);
-        print_executing!("{}", display_msg);
+        task.display_message();
 
         // execute the command
         let execute_command_output: std::process::Output;
@@ -696,8 +710,7 @@ fn run_task_http_get(task: &HTTPTask, counter: &mut Counters, output_yaml: &mut 
     if task.execute {
         counter.executed += 1;
 
-        let display_msg = format!("{}: {}", task.name, task.description);
-        print_executing!("{}", display_msg);
+        task.display_message();
 
         let client = reqwest::blocking::Client::new();
         let response = client.get(&task.url).send().unwrap();

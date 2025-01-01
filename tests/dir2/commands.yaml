@@ -39,6 +39,6 @@ commands:
     index: index
     tasks:
     - console.print:
-        name: "Print to console {{ index }}"
-        description: Print to console
-        message: 'Console print Hello World'
+        message: "Console print step 1 : Hello World {{index}}"
+    - console.print:
+        message: "Console print step 2 : Hello Portugal {{index}}"        
