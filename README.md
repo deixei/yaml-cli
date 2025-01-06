@@ -15,9 +15,26 @@ yw execute --input1 tests/output/output1.yaml --output tests/output/execute_outp
 
 cargo run -- execute --input1 tests/output/output1.yaml --output tests/output/execute_output1.yaml
 
+## Help me understand
+
+At some point I need to represent my cloud as metadata (yaml), I will also need to use that metadata to execute commands.
 
 ## Azure prep
+
 APIs ref: https://learn.microsoft.com/en-us/rest/api/azure/?view=rest-appservice-2024-04-01
+
+
+
+## Ideas
+
+### to consider
+- Telemetry with App Insights
+- Key Vault access for secrets
+- App Registration in Entra ID
+- Reporting azure with Kusto and Markdown
+
+### Potentials ...
+- Azure Audit rules engine and reporting
 
 
 

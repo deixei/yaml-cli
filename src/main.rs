@@ -97,6 +97,24 @@ fn main() {
         .version("1.0")
         .author("Marcio Parente <support@deixei.com>")
         .about("Merges YAML files")
+        .arg(
+            Arg::new("verbose")
+                .short('v')
+                .long("verbose")
+                .help("Sets the level of verbosity")
+                .global(true)
+                .required(false)
+                .default_value("none")
+                .value_parser(["none", "v", "vv", "vvv"]),
+        )
+        .arg(
+            Arg::new("debug")
+                .short('d')
+                .long("debug")
+                .help("Sets the debug flag")
+                .global(true)
+                .action(clap::ArgAction::SetTrue),
+        )
         .subcommand(
             Command::new("merge")
                 .about("Merges YAML files")
@@ -153,6 +171,9 @@ fn main() {
     //let environment_variables = load_environment_variables();
     //println!("Environment variables ALLUSERSPROFILE: {:?}", environment_variables["ALLUSERSPROFILE"].as_str().unwrap());
 
+
+
+
     if let Some(matches) = matches.subcommand_matches("merge") {
         run_subcommand_merge(matches);
     }
@@ -163,6 +184,7 @@ fn main() {
 }
 
 fn run_subcommand_merge(matches: &clap::ArgMatches) {
+    let global_args = GlobalArguments::from_matches(matches);
     let input1_paths: &String = matches.get_one::<String>("input1").unwrap();
     let input2_paths: &String = matches.get_one::<String>("input2").unwrap();
     let output_path = matches.get_one::<String>("output").unwrap();
@@ -214,9 +236,11 @@ fn run_subcommand_merge(matches: &clap::ArgMatches) {
     }
 
     fs::write(output_path, output_yaml_string).unwrap();
+    global_args.display_summary();    
 }
 
 fn run_subcommand_execute(matches: &clap::ArgMatches) {
+    let global_args = GlobalArguments::from_matches(matches);
     let input_path: &String = matches.get_one::<String>("input1").unwrap();
     let output_path = matches.get_one::<String>("output").unwrap();
 
@@ -255,10 +279,42 @@ fn run_subcommand_execute(matches: &clap::ArgMatches) {
     }
 
     counter.display_summary();
+    global_args.display_summary();
 
     let output_yaml_string = serde_yaml::to_string(&output_yaml).unwrap();
     save_to_file(path_out, &output_yaml_string);
 }
+
+
+struct GlobalArguments {
+    verbose: String,
+    debug: bool,
+}
+
+impl GlobalArguments {
+    fn from_matches(matches: &clap::ArgMatches) -> Self {
+        let global_debug_flag: bool = matches.get_flag("debug");
+        //DEBUG: print_debug!("Global debug flag: {:?}", global_debug_flag);
+        let global_verbose_level: String = matches.get_one::<String>("verbose").unwrap().clone();
+        //DEBUG: print_debug!("Global verbose level: {:?}", global_verbose_level);
+        return GlobalArguments { verbose: global_verbose_level, debug: global_debug_flag };
+    }
+
+    fn display_summary(&self) {
+        if self.debug {
+            println!("");
+            print_banner_yellow!("### Global Arguments #####################################");
+            print_warning!(
+                "Debug: {}; Verbose: {};",
+                self.debug,
+                self.verbose
+            );
+            print_banner_yellow!("##########################################################");
+        }
+    }
+
+}
+
 
 struct Counters {
     total: i32,

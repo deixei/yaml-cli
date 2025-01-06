@@ -23,7 +23,7 @@ commands:
     name: Get list of processes
     description: this a PowerShell command
     url: 'https://jsonplaceholder.typicode.com/posts/1'
-    output: out2
+    output: http.out1
 
 - console.print:
     name: Print to console

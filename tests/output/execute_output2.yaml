@@ -4,7 +4,7 @@ outs:
     err: "'ls' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n"
     sts: 'exit code: 1'
   output_2:
-    out: " Volume in drive C has no label.\r\n Volume Serial Number is 4A68-838D\r\n\r\n Directory of C:\\dev\\deixei\\yaml-cli\r\n\r\n16/12/2024  08:07    <DIR>          .\r\n10/11/2024  09:07    <DIR>          ..\r\n10/11/2024  09:07             7,258 .gitignore\r\n01/01/2025  08:49            43,668 Cargo.lock\r\n01/01/2025  08:49               481 Cargo.toml\r\n26/12/2024  13:20               128 config.yaml\r\n10/11/2024  09:07             1,092 LICENSE\r\n27/12/2024  08:26             1,055 README.md\r\n16/12/2024  08:07    <DIR>          src\r\n10/11/2024  10:20    <DIR>          target\r\n26/12/2024  08:15    <DIR>          tests\r\n               6 File(s)         53,682 bytes\r\n               5 Dir(s)  1,350,906,662,912 bytes free\r\n"
+    out: " Volume in drive C has no label.\r\n Volume Serial Number is 4A68-838D\r\n\r\n Directory of C:\\dev\\deixei\\yaml-cli\r\n\r\n16/12/2024  08:07    <DIR>          .\r\n10/11/2024  09:07    <DIR>          ..\r\n10/11/2024  09:07             7,258 .gitignore\r\n01/01/2025  08:49            43,668 Cargo.lock\r\n01/01/2025  08:49               481 Cargo.toml\r\n26/12/2024  13:20               128 config.yaml\r\n10/11/2024  09:07             1,092 LICENSE\r\n03/01/2025  10:00             1,442 README.md\r\n16/12/2024  08:07    <DIR>          src\r\n10/11/2024  10:20    <DIR>          target\r\n26/12/2024  08:15    <DIR>          tests\r\n               6 File(s)         54,069 bytes\r\n               5 Dir(s)  1,353,788,170,240 bytes free\r\n"
     err: ''
     sts: 'exit code: 0'
   output_4:
@@ -47,12 +47,13 @@ outs:
     out: 'Console print step 2 : Hello Portugal {{index}}'
     err: ''
     sts: '0'
-out2:
-  out: |-
-    {
-      "userId": 1,
-      "id": 1,
-      "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-      "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
-    }
-  sts: Success
+http:
+  out1:
+    out: |-
+      {
+        "userId": 1,
+        "id": 1,
+        "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+        "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+      }
+    sts: Success
