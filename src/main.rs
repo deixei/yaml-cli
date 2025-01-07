@@ -557,6 +557,8 @@ fn run_task_console_print(task: &ConsoleTask, counter: &mut Counters, output_yam
 
         let mut execute_command_output_value = Value::String(task.message.to_string());
 
+        // TODO: this needs to be refactored to a function
+
         if let Some(execute_command_output_str) = execute_command_output_value.as_str() {
             if execute_command_output_str.contains("{{") {
                 let mut output_yaml_string = task.message.to_string();

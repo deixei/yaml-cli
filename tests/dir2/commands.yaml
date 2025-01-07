@@ -42,4 +42,4 @@ commands:
     - console.print:
         message: "Console print step 1 : Hello World {{index}} extra {{ps_out1.out}}"
     - console.print:
-        message: "Console print step 2 : Hello Portugal {{index}}"        
+        message: "Console print step 2 : Hello Portugal {{index}} at {{get_date()}}"        

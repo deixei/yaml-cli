@@ -35,7 +35,7 @@ APIs ref: https://learn.microsoft.com/en-us/rest/api/azure/?view=rest-appservice
 
 ### Potentials ...
 - Azure Audit rules engine and reporting
-
+- https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/creating-a-default-community-health-file
 
 
 ## Author

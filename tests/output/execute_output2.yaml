@@ -4,7 +4,7 @@ outs:
     err: "'ls' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n"
     sts: 'exit code: 1'
   output_2:
-    out: " Volume in drive C has no label.\r\n Volume Serial Number is 4A68-838D\r\n\r\n Directory of C:\\dev\\deixei\\yaml-cli\r\n\r\n16/12/2024  08:07    <DIR>          .\r\n10/11/2024  09:07    <DIR>          ..\r\n10/11/2024  09:07             7,258 .gitignore\r\n01/01/2025  08:49            43,668 Cargo.lock\r\n01/01/2025  08:49               481 Cargo.toml\r\n26/12/2024  13:20               128 config.yaml\r\n10/11/2024  09:07             1,092 LICENSE\r\n03/01/2025  10:00             1,442 README.md\r\n16/12/2024  08:07    <DIR>          src\r\n10/11/2024  10:20    <DIR>          target\r\n26/12/2024  08:15    <DIR>          tests\r\n               6 File(s)         54,069 bytes\r\n               5 Dir(s)  1,352,680,857,600 bytes free\r\n"
+    out: " Volume in drive C has no label.\r\n Volume Serial Number is 4A68-838D\r\n\r\n Directory of C:\\dev\\deixei\\yaml-cli\r\n\r\n16/12/2024  08:07    <DIR>          .\r\n10/11/2024  09:07    <DIR>          ..\r\n10/11/2024  09:07             7,258 .gitignore\r\n01/01/2025  08:49            43,668 Cargo.lock\r\n01/01/2025  08:49               481 Cargo.toml\r\n26/12/2024  13:20               128 config.yaml\r\n10/11/2024  09:07             1,092 LICENSE\r\n03/01/2025  10:00             1,442 README.md\r\n16/12/2024  08:07    <DIR>          src\r\n10/11/2024  10:20    <DIR>          target\r\n26/12/2024  08:15    <DIR>          tests\r\n               6 File(s)         54,069 bytes\r\n               5 Dir(s)  1,353,405,734,912 bytes free\r\n"
     err: ''
     sts: 'exit code: 0'
   output_6:
@@ -16,7 +16,7 @@ outs:
     err: ''
     sts: '0'
   output_9:
-    out: 'Console print step 2 : Hello Portugal 1'
+    out: 'Console print step 2 : Hello Portugal 1 at 2025-01-07T06:39:14.751913900+00:00'
     err: ''
     sts: '0'
   output_10:
@@ -24,7 +24,7 @@ outs:
     err: ''
     sts: '0'
   output_11:
-    out: 'Console print step 2 : Hello Portugal 2'
+    out: 'Console print step 2 : Hello Portugal 2 at 2025-01-07T06:39:14.755255800+00:00'
     err: ''
     sts: '0'
   output_12:
@@ -32,7 +32,7 @@ outs:
     err: ''
     sts: '0'
   output_13:
-    out: 'Console print step 2 : Hello Portugal 3'
+    out: 'Console print step 2 : Hello Portugal 3 at 2025-01-07T06:39:14.758535300+00:00'
     err: ''
     sts: '0'
   output_14:
@@ -40,7 +40,7 @@ outs:
     err: ''
     sts: '0'
   output_15:
-    out: 'Console print step 2 : Hello Portugal 4'
+    out: 'Console print step 2 : Hello Portugal 4 at 2025-01-07T06:39:14.762089100+00:00'
     err: ''
     sts: '0'
 ps_out1:
