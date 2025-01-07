@@ -171,9 +171,6 @@ fn main() {
     //let environment_variables = load_environment_variables();
     //println!("Environment variables ALLUSERSPROFILE: {:?}", environment_variables["ALLUSERSPROFILE"].as_str().unwrap());
 
-
-
-
     if let Some(matches) = matches.subcommand_matches("merge") {
         run_subcommand_merge(matches);
     }
@@ -236,7 +233,7 @@ fn run_subcommand_merge(matches: &clap::ArgMatches) {
     }
 
     fs::write(output_path, output_yaml_string).unwrap();
-    global_args.display_summary();    
+    global_args.display_summary();
 }
 
 fn run_subcommand_execute(matches: &clap::ArgMatches) {
@@ -285,7 +282,6 @@ fn run_subcommand_execute(matches: &clap::ArgMatches) {
     save_to_file(path_out, &output_yaml_string);
 }
 
-
 struct GlobalArguments {
     verbose: String,
     debug: bool,
@@ -297,24 +293,21 @@ impl GlobalArguments {
         //DEBUG: print_debug!("Global debug flag: {:?}", global_debug_flag);
         let global_verbose_level: String = matches.get_one::<String>("verbose").unwrap().clone();
         //DEBUG: print_debug!("Global verbose level: {:?}", global_verbose_level);
-        return GlobalArguments { verbose: global_verbose_level, debug: global_debug_flag };
+        return GlobalArguments {
+            verbose: global_verbose_level,
+            debug: global_debug_flag,
+        };
     }
 
     fn display_summary(&self) {
         if self.debug {
             println!("");
             print_banner_yellow!("### Global Arguments #####################################");
-            print_warning!(
-                "Debug: {}; Verbose: {};",
-                self.debug,
-                self.verbose
-            );
+            print_warning!("Debug: {}; Verbose: {};", self.debug, self.verbose);
             print_banner_yellow!("##########################################################");
         }
     }
-
 }
-
 
 struct Counters {
     total: i32,
@@ -562,7 +555,26 @@ fn run_task_console_print(task: &ConsoleTask, counter: &mut Counters, output_yam
         counter.executed += 1;
         task.display_message();
 
-        let execute_command_output_value = Value::String(task.message.to_string());
+        let mut execute_command_output_value = Value::String(task.message.to_string());
+
+        if let Some(execute_command_output_str) = execute_command_output_value.as_str() {
+            if execute_command_output_str.contains("{{") {
+                let mut output_yaml_string = task.message.to_string();
+                while output_yaml_string.contains("{{") {
+                    output_yaml_string = replace_placeholders(&output_yaml_string, output_yaml);
+                }
+
+                if output_yaml_string.contains("{{") {
+                    print_error!(
+                        "Output path contains unresolved variables: {}",
+                        output_yaml_string
+                    );
+                    std::process::exit(1);
+                }
+
+                execute_command_output_value = Value::String(output_yaml_string);
+            }
+        }
 
         println!("{:?}", task.message.to_string());
 
@@ -858,6 +870,10 @@ fn run_command_loop(
                 print_debug!("### Tasks: {:?}", loop_tasks);
             }
             for loop_task in loop_tasks.iter() {
+                let index_text = format!("{}", index_text);
+                let index_value = Value::String(i.to_string());
+                set_nested_value(output_yaml, &index_text, index_value);
+
                 run_command_task(command_index, loop_task, counter, output_yaml);
             }
         }

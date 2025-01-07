@@ -19,6 +19,7 @@ commands:
     name: Get list of processes
     description: this a PowerShell command
     cmd: Write-OutPut ('Hello World')    
+    output: ps_out1
 - http.get:
     name: Get list of processes
     description: this a PowerShell command
@@ -39,6 +40,6 @@ commands:
     index: index
     tasks:
     - console.print:
-        message: "Console print step 1 : Hello World {{index}}"
+        message: "Console print step 1 : Hello World {{index}} extra {{ps_out1.out}}"
     - console.print:
         message: "Console print step 2 : Hello Portugal {{index}}"        
