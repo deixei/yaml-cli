@@ -1,0 +1,22 @@
+## cargo run -- execute --input1 tests/azure/001_basic_commands.yaml --output tests/azure/001_out.yaml
+
+commands:
+- console.print:
+    name: Azure Test commands
+    message: "This will execute basic commands for Azure {{'AZURE_TENANT'|get_env}}"
+    output: intro_message
+
+- az.login:
+    name: Azure Login defaults
+    auth:
+      type: service-principal
+    output: login_sp_output
+
+- az.login:
+    name: Azure Login Service Principal
+    auth:
+      type: service-principal
+      tenant: $AZURE_TENANT
+      client: $AZURE_CLIENT
+      secret: $AZURE_SECRET
+    output: login_output

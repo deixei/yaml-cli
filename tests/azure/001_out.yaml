@@ -1,0 +1,4 @@
+intro_message:
+  out: 'This will execute basic commands for Azure '
+  err: ''
+  sts: '0'

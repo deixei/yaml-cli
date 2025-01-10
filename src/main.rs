@@ -1,5 +1,6 @@
 use chrono::prelude::*;
-use clap::{Arg, Command};
+use clap::{Arg, Command, ValueEnum};
+use serde::de;
 use serde_yaml::Value;
 use std::path::Path;
 use std::{fs, ops::Index};
@@ -506,6 +507,115 @@ impl HTTPTask {
     }
 }
 
+#[derive(Debug)]
+struct AzureAuthentication {
+    auth_type: String,
+    tenant: String,
+    client: String,
+    secret: String
+}
+
+impl AzureAuthentication {
+    fn from_value(task: &Value) -> Self {
+
+        // get tenant, client and secret defualt values from environment variables
+        let default_tenant: String = std::env::var("AZURE_TENANT_ID").unwrap_or("None".to_string());
+        let default_client: String = std::env::var("AZURE_CLIENT_ID").unwrap_or("None".to_string());
+        let default_secret: String = std::env::var("AZURE_CLIENT_SECRET").unwrap_or("None".to_string());
+
+        let auth: AzureAuthentication = AzureAuthentication {
+            auth_type: task
+                .get(&Value::String("auth_type".to_string()))
+                .unwrap_or(&Value::Null)
+                .as_str()
+                .unwrap_or("None")
+                .to_string(),
+            tenant: task
+                .get(&Value::String("tenant".to_string()))
+                .unwrap_or(&Value::Null)
+                .as_str()
+                .unwrap_or(&default_tenant)
+                .to_string(),
+            client: task
+                .get(&Value::String("client".to_string()))
+                .unwrap_or(&Value::Null)
+                .as_str()
+                .unwrap_or(&default_client)
+                .to_string(),
+            secret: task
+                .get(&Value::String("secret".to_string()))
+                .unwrap_or(&Value::Null)
+                .as_str()
+                .unwrap_or(&default_secret)
+                .to_string(),
+        };
+        return auth;
+    }
+    
+    fn debug_message(&self) {
+        let display_msg = format!("{} {} {}", self.auth_type, self.tenant, self.client);
+        print_executing!("{}", display_msg);
+    }
+}
+
+#[derive(Debug)]
+struct AzureTask {
+    name: String,
+    description: String,
+    execute: bool,
+    debug_flag: bool,
+    auth: AzureAuthentication,
+    output: String
+}
+
+impl AzureTask {
+    fn from_value(task: &Value, command_index: &i32) -> Self {
+        let default_name: String = format!("Command Index {}", command_index);
+        let default_output: String = format!("outs.output_{}", command_index);
+
+        let auth = AzureAuthentication::from_value(task.get(&Value::String("auth".to_string())).unwrap());
+
+        let azure_task = AzureTask {
+            name: task
+                .get(&Value::String("name".to_string()))
+                .unwrap_or(&Value::Null)
+                .as_str()
+                .unwrap_or(&default_name)
+                .to_string(),
+            description: task
+                .get(&Value::String("description".to_string()))
+                .unwrap_or(&Value::Null)
+                .as_str()
+                .unwrap_or("None")
+                .to_string(),
+            execute: task
+                .get(&Value::String("execute".to_string()))
+                .unwrap_or(&Value::Null)
+                .as_bool()
+                .unwrap_or(true),
+            debug_flag: task
+                .get(&Value::String("debug".to_string()))
+                .unwrap_or(&Value::Null)
+                .as_bool()
+                .unwrap_or(false),
+            auth: auth,
+            output: task
+                .get(&Value::String("output".to_string()))
+                .unwrap_or(&Value::Null)
+                .as_str()
+                .unwrap_or(&default_output)
+                .to_string(),
+        };
+        return azure_task;
+    }
+    fn display_message(&self) {
+        let display_msg = format!("{}: {}", self.name, self.description);
+        print_executing!("{}", display_msg);
+    }
+    
+}
+
+
 fn run_command_task(
     command_index: &mut i32,
     command: &Value,
@@ -543,6 +653,9 @@ fn run_command_task(
     } else if let Some(task) = task.get(&Value::String("http.get".to_string())) {
         let http_task = HTTPTask::from_value(task, command_index);
         run_task_http_get(&http_task, counter, output_yaml);
+    } else if let Some(task) = task.get(&Value::String("az.login".to_string())) {
+        let azure_task = AzureTask::from_value(task, command_index);
+        run_task_azure_login(&azure_task, counter, output_yaml);        
     } else {
         print_error!("Command task not known in the input file");
     }
@@ -809,12 +922,34 @@ fn run_task_http_get(task: &HTTPTask, counter: &mut Counters, output_yaml: &mut 
     }
 }
 
+fn run_task_azure_login(task: &AzureTask, counter: &mut Counters, output_yaml: &mut Value) {
+    counter.total += 1;
+    if task.execute {
+        counter.executed += 1;
+
+        task.display_message();
+
+        task.auth.debug_message();
+
+        if task.debug_flag {
+            print_debug!("### End: {:?}", output_yaml);
+        }
+    } else {
+        print_warning!("SKIP: Not executing: {:?}", task);
+        counter.skipped += 1;
+    }
+}
+
+
 fn run_command_loop(
     command_index: &mut i32,
     task: &Value,
     counter: &mut Counters,
     output_yaml: &mut Value,
 ) {
+    // this loop command is limited to iterate over a range of numbers
+    // there are more ways for a loop to be useful, but for now this can show the cycle use case
+
     counter.total += 1;
     let execute: bool = task
         .get(&Value::String("execute".to_string()))
